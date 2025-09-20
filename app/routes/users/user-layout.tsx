@@ -3,7 +3,7 @@ import UpcomingTrips from 'components/UpcomingTrips';
 import WelcomeSection from 'components/Welcome';
 import Wishlist from 'components/Wishlist';
 import RecommendedTrips from '../../../components/RecommendedTrips';
-import { getUserTrips, getAllTrips } from '~/appwrite/trips'; // Added getAllTrips import
+import { getUserTrips, getAllTrips, updateUserWishlist } from '~/appwrite/trips'; // Added getAllTrips import
 import { getUser } from '~/appwrite/auth';
 import { parseTripData } from '~/lib/utlis';
 import { allTrips } from '~/constants'; // Keep this for RecommendedTrips
@@ -13,6 +13,7 @@ const UserLayout = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [wishlist, setWishlist] = useState<string[]>([]);
 
   // Keep the transformed trips for RecommendedTrips (demo data)
   const transformedTrips = allTrips.map(trip => ({
@@ -34,6 +35,7 @@ const UserLayout = () => {
       }
       
       setUser(currentUser);
+      setWishlist(currentUser.wishlist || []);
       
       // TEMPORARY: Show all trips instead of user-specific trips
       // This is just to test that the component works
@@ -89,7 +91,22 @@ const UserLayout = () => {
 
     loadUserTrips();
   }, []);
+  const toggleWishlist = async (tripId: string) => {
+    const newWishlist = wishlist.includes(tripId)
+      ? wishlist.filter(id => id !== tripId)
+      : [...wishlist, tripId];
 
+    setWishlist(newWishlist);
+
+    if (user) {
+      await updateUserWishlist(user.accountId, newWishlist);
+    }
+  };
+
+  const wishlistedTrips = [
+    ...userTrips,
+    ...transformedTrips,
+  ].filter(trip => wishlist.includes(trip.id));
   return (
     <div>
       <WelcomeSection />
@@ -115,13 +132,18 @@ const UserLayout = () => {
             <UpcomingTrips 
               trips={userTrips} 
               onFetchTrips={fetchUserTrips}
+              wishlist={wishlist}
+              toggleWishlist={toggleWishlist}
             />
           )}
         </section>
 
-        <section>
+        <section id="wishlist">
           <h2 className="text-2xl font-semibold mb-4">Wishlist</h2>
-          <Wishlist />
+          <Wishlist
+            wishlistedTrips={wishlistedTrips}
+            toggleWishlist={toggleWishlist}
+          />
         </section>
 
         <section>

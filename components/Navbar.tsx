@@ -83,9 +83,9 @@ const Navbar = ({ onLogout }: NavbarProps) => {
   ];
 
   const userLinks = [
-    { href: "/user", label: "Home" },
+    { href: "/users/home", label: "Home" },
     { href: "/my-trips", label: "My Trips" },
-    { href: "/wishlist", label: "Wishlist" },
+    { href: "/users/home#wishlist", label: "Wishlist" },
     { href: "/contact", label: "Contact" },
   ];
 

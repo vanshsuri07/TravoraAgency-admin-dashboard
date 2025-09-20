@@ -23,17 +23,20 @@ interface UpcomingTripsProps {
   trips?: Trip[];
   onFetchTrips?: () => Promise<Trip[]>;
   refreshTrigger?: number;
+  wishlist: string[];
+  toggleWishlist: (tripId: string) => void;
 }
 
 const UpcomingTrips: React.FC<UpcomingTripsProps> = ({
   trips: initialTrips = [],
   onFetchTrips,
   refreshTrigger = 0,
+  wishlist,
+  toggleWishlist,
 }) => {
   const [trips, setTrips] = useState<Trip[]>(initialTrips);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [wishlistedTrips, setWishlistedTrips] = useState<string[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -67,15 +70,6 @@ const UpcomingTrips: React.FC<UpcomingTripsProps> = ({
       setTrips(initialTrips);
     }
   }, [initialTrips]);
-
-  // Wishlist toggle
-  const toggleWishlist = (tripId: string) => {
-    setWishlistedTrips((prev) =>
-      prev.includes(tripId)
-        ? prev.filter((id) => id !== tripId)
-        : [...prev, tripId]
-    );
-  };
 
   // Scrolling
   const scroll = (direction: "left" | "right") => {
@@ -195,12 +189,12 @@ const UpcomingTrips: React.FC<UpcomingTripsProps> = ({
                     }}
                     className="absolute top-3 right-3 z-20 p-2 rounded-full bg-white/80 hover:bg-white text-gray-600 hover:text-red-500 shadow-md opacity-0 group-hover:opacity-100 transition-all"
                     aria-label={
-                      wishlistedTrips.includes(trip.id)
+                      wishlist.includes(trip.id)
                         ? "Remove from wishlist"
                         : "Add to wishlist"
                     }
                   >
-                    {wishlistedTrips.includes(trip.id) ? (
+                    {wishlist.includes(trip.id) ? (
                       <FaHeart className="w-5 h-5 text-red-500" />
                     ) : (
                       <FaRegHeart className="w-5 h-5" />

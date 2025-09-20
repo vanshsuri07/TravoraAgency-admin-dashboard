@@ -103,34 +103,34 @@ export const getTripById = async (tripId: string) => {
     return trip;
 }
 
-export const addToWishlist = async (tripId: string, userId: string) => {
+
+export const updateUserWishlist = async (userId: string, wishlist: string[]) => {
     try {
-        const wishlistItem = await database.createDocument(
+        // First, get the user document to find the document ID
+        const user = await database.listDocuments(
             appwriteConfig.databaseId,
-            'wishlist', // Assuming 'wishlist' is the collection ID
-            ID.unique(),
+            appwriteConfig.userCollectionId,
+            [Query.equal("accountId", userId)]
+        );
+
+        if (user.documents.length === 0) {
+            throw new Error("User not found");
+        }
+
+        const documentId = user.documents[0].$id;
+
+        // Now, update the user document with the new wishlist
+        const updatedUser = await database.updateDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.userCollectionId,
+            documentId,
             {
-                tripId,
-                userId,
+                wishlist: wishlist,
             }
         );
-        return wishlistItem;
+        return updatedUser;
     } catch (error) {
-        console.error('Error adding to wishlist:', error);
+        console.error('Error updating wishlist:', error);
         return null;
     }
-}
-
-export const getWishlist = async (userId: string) => {
-    try {
-        const { documents } = await database.listDocuments(
-            appwriteConfig.databaseId,
-            'wishlist', // Assuming 'wishlist' is the collection ID
-            [Query.equal('userId', userId)]
-        );
-        return documents;
-    } catch (error) {
-        console.error('Error fetching wishlist:', error);
-        return [];
-    }
-}
+};
